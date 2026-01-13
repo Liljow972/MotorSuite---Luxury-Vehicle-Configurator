@@ -14,7 +14,8 @@ import {
   Info, Sparkles, ChevronRight, LayoutGrid, Settings, ShieldCheck, 
   Star, User, Search, ShoppingBag, X, LogOut, CreditCard, Bell, 
   Plus, Trash2, ArrowRight, Home, Car, Users, FileText, BarChart3, HelpCircle,
-  TrendingUp, Package, Clock, Calendar, MessageSquare, ClipboardCheck, Sparkle
+  TrendingUp, Package, Clock, Calendar, MessageSquare, ClipboardCheck, Sparkle,
+  Download, Mail as MailIcon
 } from 'lucide-react';
 
 const App: React.FC = () => {
@@ -88,7 +89,7 @@ const App: React.FC = () => {
                 </div>
                 <div className="space-y-4">
                   {[1, 2, 3].map(i => (
-                    <div key={i} className="flex items-center justify-between p-5 bg-black/5 rounded-3xl border border-transparent hover:border-black/5 transition-all">
+                    <div key={i} className="flex items-center justify-between p-5 bg-black/5 rounded-3xl border border-transparent hover:border-black/5 transition-all cursor-pointer group">
                       <div className="flex items-center gap-6">
                         <div className="text-center w-12 border-r border-black/10 pr-6">
                           <p className="text-lg font-bold">0{i+8}:00</p>
@@ -101,7 +102,7 @@ const App: React.FC = () => {
                       </div>
                       <div className="flex items-center gap-4">
                         <span className="px-3 py-1 bg-white rounded-full text-[10px] font-bold text-black/40 uppercase">Ongoing</span>
-                        <button className="p-2 hover:bg-black hover:text-white rounded-full transition-all"><ArrowRight size={16} /></button>
+                        <button className="p-2 group-hover:bg-black group-hover:text-white rounded-full transition-all"><ArrowRight size={16} /></button>
                       </div>
                     </div>
                   ))}
@@ -215,6 +216,7 @@ const App: React.FC = () => {
         );
 
       case 'services': // View as Invoices module
+      case 'invoices':
         return (
           <div className="px-12 py-12 animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-6xl mx-auto">
             <div className="flex justify-between items-center mb-12">
@@ -242,7 +244,7 @@ const App: React.FC = () => {
                        <p className="text-2xl font-bold mb-1">${quote.total.toLocaleString()}</p>
                        <div className="flex items-center gap-2 justify-end">
                          <button className="p-2 hover:bg-black/5 rounded-full text-black/40 hover:text-black transition-all"><Download size={14}/></button>
-                         <button className="p-2 hover:bg-black/5 rounded-full text-black/40 hover:text-black transition-all"><Mail size={14}/></button>
+                         <button className="p-2 hover:bg-black/5 rounded-full text-black/40 hover:text-black transition-all"><MailIcon size={14}/></button>
                        </div>
                     </div>
                   </div>
@@ -253,7 +255,13 @@ const App: React.FC = () => {
 
       case 'configure':
         return (
-          <div className="max-w-[1600px] mx-auto animate-in fade-in duration-700">
+          <div className="max-w-[1600px] mx-auto animate-in fade-in duration-700 relative">
+            <button 
+              onClick={() => handleSetView('dashboard')}
+              className="absolute top-4 left-8 z-50 flex items-center gap-2 px-4 py-2 glass rounded-full text-[10px] font-bold uppercase tracking-widest hover:bg-white transition-all shadow-sm"
+            >
+              <ChevronRight size={14} className="rotate-180" /> Back to Workspace
+            </button>
             <CarVisualizer model={currentModel} activeColor={activeColor} />
             <div className="px-8 mt-4">
               <StatsBar model={currentModel} />
@@ -280,6 +288,7 @@ const App: React.FC = () => {
       />
       
       <div className="flex">
+        {/* Fixed SaaS Sidebar */}
         <aside className="w-72 h-screen pt-24 pb-8 flex flex-col glass border-r border-black/5 hidden xl:flex fixed left-0 z-40">
           <div className="px-8 mb-10 overflow-y-auto custom-scrollbar">
             <h3 className="text-[10px] font-bold text-black/30 uppercase tracking-[0.2em] mb-6">Garage Operations</h3>
@@ -288,7 +297,7 @@ const App: React.FC = () => {
                 { id: 'dashboard', label: 'Dashboard', icon: <Home size={18} /> },
                 { id: 'planning', label: 'Planning', icon: <Calendar size={18} /> },
                 { id: 'crm', label: 'Customers', icon: <Users size={18} /> },
-                { id: 'inventory', label: 'Inventory', icon: <Car size={18} /> },
+                { id: 'inventory', label: 'Fleet & Models', icon: <Car size={18} /> },
                 { id: 'catalog', label: 'Stock & Parts', icon: <Package size={18} /> },
                 { id: 'services', label: 'Invoicing', icon: <FileText size={18} /> },
                 { id: 'analytics', label: 'Reporting', icon: <BarChart3 size={18} /> },
@@ -315,6 +324,12 @@ const App: React.FC = () => {
         
         <main className={`flex-1 pt-24 min-h-screen relative transition-all duration-500 ${currentView === 'configure' ? 'xl:ml-72 xl:mr-96' : 'xl:ml-72 xl:mx-0'}`}>
           {renderSaaSModule()}
+          
+          {currentView === 'configure' && (
+            <div className="fixed bottom-0 left-72 right-96 pointer-events-none opacity-[0.02] text-[20vw] font-black tracking-tighter uppercase whitespace-nowrap overflow-hidden z-0 translate-y-1/2 select-none">
+              {currentModel.name}
+            </div>
+          )}
         </main>
 
         {currentView === 'configure' && (
@@ -327,6 +342,147 @@ const App: React.FC = () => {
         )}
       </div>
 
+      {/* Mobile Burger Menu Overlay */}
+      {isMobileMenuOpen && (
+        <div className="fixed inset-0 z-[60] lg:hidden animate-in fade-in duration-300">
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setIsMobileMenuOpen(false)}></div>
+          <div className="absolute top-20 left-0 right-0 glass border-b border-black/5 p-8 flex flex-col gap-6 animate-in slide-in-from-top-4 duration-300">
+            {[
+              { id: 'dashboard', label: 'Dashboard', icon: <Home size={20} /> },
+              { id: 'planning', label: 'Planning', icon: <Calendar size={20} /> },
+              { id: 'crm', label: 'Customers', icon: <Users size={20} /> },
+              { id: 'services', label: 'Quotes', icon: <FileText size={20} /> },
+              { id: 'configure', label: 'Configurator', icon: <Plus size={20} /> },
+            ].map((item) => (
+              <button 
+                key={item.id} 
+                onClick={() => handleSetView(item.id)}
+                className={`text-2xl font-light text-left transition-all flex items-center gap-4 ${currentView === item.id ? 'text-black font-bold' : 'text-black/50'}`}
+              >
+                {item.icon} {item.label}
+              </button>
+            ))}
+            <div className="h-px bg-black/5 w-full my-2"></div>
+            <button 
+              onClick={() => { setIsMobileMenuOpen(false); setIsTestDriveOpen(true); }}
+              className="w-full py-4 bg-black text-white rounded-2xl font-bold uppercase text-xs tracking-widest"
+            >
+              Book Test Drive
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Search Overlay */}
+      {isSearchOpen && (
+        <div className="fixed inset-0 z-[100] flex items-start justify-center p-20 animate-in fade-in duration-300">
+          <div className="absolute inset-0 bg-black/90 backdrop-blur-xl" onClick={() => setIsSearchOpen(false)}></div>
+          <div className="relative w-full max-w-3xl animate-in slide-in-from-top-12 duration-500">
+            <div className="flex items-center gap-4 mb-12">
+              <Search className="text-white/40" size={32} />
+              <input 
+                autoFocus 
+                type="text" 
+                placeholder="Search inventory, leads, or quotes..." 
+                className="w-full bg-transparent border-b border-white/20 pb-4 text-4xl font-light text-white outline-none placeholder:text-white/10"
+              />
+              <button onClick={() => setIsSearchOpen(false)} className="text-white/40 hover:text-white transition-colors">
+                <X size={32} />
+              </button>
+            </div>
+            <div className="grid grid-cols-2 gap-12">
+              <div>
+                <h3 className="text-white/20 text-xs font-bold uppercase tracking-widest mb-6">Quick Filters</h3>
+                <div className="space-y-4">
+                  {['In Stock Vehicles', 'Pending Appointments', 'New Customers'].map(f => (
+                    <button key={f} className="text-white/60 hover:text-white flex items-center justify-between w-full text-lg group">
+                      {f} <ArrowRight size={18} className="opacity-0 group-hover:opacity-100 transition-all -translate-x-4 group-hover:translate-x-0" />
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="text-white/20 text-sm font-bold uppercase tracking-widest space-y-4">
+                 <p>/dashboard</p>
+                 <p>/new-invoice</p>
+                 <p>/settings</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Cart Drawer (Build Queue) */}
+      <div className={`fixed top-0 right-0 h-full w-full sm:w-96 glass bg-white/95 backdrop-blur-2xl z-[110] border-l border-black/5 shadow-2xl transition-transform duration-500 ${isCartOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+        <div className="p-8 flex flex-col h-full">
+          <div className="flex items-center justify-between mb-12">
+            <div className="flex items-center gap-3">
+              <ShoppingBag size={24} />
+              <h2 className="text-xl font-bold">Build Queue</h2>
+            </div>
+            <button onClick={() => setIsCartOpen(false)} className="p-2 hover:bg-black/5 rounded-full transition-colors">
+              <X size={24} />
+            </button>
+          </div>
+          <div className="flex-grow overflow-y-auto space-y-8 pr-4 custom-scrollbar">
+            <div className="flex gap-4 group">
+              <div className="w-20 h-20 bg-black/5 rounded-2xl flex items-center justify-center overflow-hidden">
+                <img src={currentModel.image} className="w-full h-full object-contain p-2" />
+              </div>
+              <div className="flex-grow">
+                <h4 className="font-bold text-sm">{currentModel.name}</h4>
+                <p className="text-[10px] text-black/40 uppercase font-bold tracking-widest mb-2">{activeColor.name}</p>
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-sm">${(currentModel.basePrice + activeColor.price).toLocaleString()}</span>
+                  <button className="text-black/30 hover:text-red-500 transition-colors"><Trash2 size={14} /></button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="pt-8 border-t border-black/5 mt-auto">
+            <button className="w-full py-5 bg-black text-white rounded-2xl font-bold uppercase text-xs tracking-widest hover:bg-black/80 transition-all">
+              Save Projects
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Profile Overlay */}
+      {isProfileOpen && (
+        <div className="fixed inset-0 z-[120] flex items-center justify-center p-6 animate-in fade-in duration-300">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setIsProfileOpen(false)}></div>
+          <div className="relative w-full max-w-md glass border border-white/50 rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in duration-300">
+            <div className="p-8 bg-black text-white flex flex-col items-center">
+              <button onClick={() => setIsProfileOpen(false)} className="absolute top-6 right-6 p-2 text-white/50 hover:text-white rounded-full">
+                <X size={20} />
+              </button>
+              <div className="w-24 h-24 rounded-full border-4 border-white/20 p-1 mb-4 overflow-hidden">
+                <img src="https://i.pravatar.cc/150?u=4" className="w-full h-full object-cover rounded-full" />
+              </div>
+              <h3 className="text-xl font-bold tracking-tight">Christian Delacroix</h3>
+              <p className="text-white/40 text-[10px] font-bold uppercase tracking-[0.2em] mt-1 flex items-center gap-2">
+                <ShieldCheck size={12} /> Senior Sales Executive
+              </p>
+            </div>
+            <div className="p-6 space-y-1">
+              {[
+                { label: 'Company Profile', icon: <Home size={18} /> },
+                { label: 'System Settings', icon: <Settings size={18} /> },
+                { label: 'User Permissions', icon: <Users size={18} /> },
+                { label: 'Security Center', icon: <ShieldCheck size={18} /> },
+              ].map(item => (
+                <button key={item.label} className="w-full flex items-center justify-between p-4 hover:bg-black/5 rounded-2xl transition-all group text-black/70 hover:text-black">
+                  <div className="flex items-center gap-3">
+                    {item.icon}
+                    <span className="text-sm font-semibold">{item.label}</span>
+                  </div>
+                  <ChevronRight size={14} className="opacity-30" />
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
       <TestDriveModal 
         isOpen={isTestDriveOpen} 
         onClose={() => setIsTestDriveOpen(false)} 
@@ -338,14 +494,6 @@ const App: React.FC = () => {
 
 const AlertCircle = ({ size, className }: { size: number, className?: string }) => (
   <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-);
-
-const Download = ({ size, className }: { size: number, className?: string }) => (
-  <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-);
-
-const Mail = ({ size, className }: { size: number, className?: string }) => (
-  <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/><rect width="20" height="14" x="2" y="6" rx="2"/></svg>
 );
 
 export default App;
